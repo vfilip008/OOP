@@ -1,0 +1,79 @@
+#include <bits/stdc++.h>
+#include <fstream>
+using namespace std;
+
+struct Color {
+    int r, g, b;
+};
+
+
+struct Pixel {
+    Color color;
+};
+
+
+struct Image {
+    int width, height;
+    Pixel* data;
+
+    Image(int w, int h) {
+        width = w;
+        height = h;
+        data = new Pixel[w * h];
+    }
+
+    Image() {
+        delete[] data;
+    }
+
+    Pixel& getPixel(int x, int y) {
+        return data[y * width + x];
+    }
+};
+
+void generateGradient(Image &img,int r1,int g1,int b1) {
+    int cx = img.width / 2;
+    int cy = img.height / 2;
+    double maxDist = sqrt(cx * cx + cy * cy);
+
+    for (int y = 0; y < img.height; y++) {
+        for (int x = 0; x < img.width; x++) {
+            int dx = x - cx;
+            int dy = y - cy;
+            double dist = sqrt(dx * dx + dy * dy);
+            double ratio = dist / maxDist;
+
+
+            int r = (int)(r1 *  (0.9 - ratio));
+            int g = (int)(g1 *  (0.9-ratio));
+            int b = (int)(b1 *  (0.9-ratio));
+
+            img.getPixel(x, y).color = {r, g, b};
+        }
+    }
+}
+
+
+void savePPM(const Image &img, const string &filename) {
+    ofstream out(filename);
+    out << "P3\n" << img.width << " " << img.height << "\n255\n";
+    for (int y = 0; y < img.height; y++) {
+        for (int x = 0; x < img.width; x++) {
+            const Color &boja = img.data[y * img.width + x].color;
+            out << boja.r << " " << boja.g << " " << boja.b << " ";
+        }
+        out << "\n";
+    }
+    out.close();
+}
+
+int main() {
+    int width,height,r,g,b;
+    cin>>width>>height;
+    cin>>r>>g>>b;
+    Image img(width, height);
+    generateGradient(img,r,g,b);
+    savePPM(img, "gradient.ppm");
+
+    return 0;
+}
